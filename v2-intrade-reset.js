@@ -19,6 +19,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
 function show(id){const el=$('v2-intrade-overlay');if(!el)return;setupId=id&&setups().some(s=>s.id===id)?id:null;choosing=!setupId;step=1;fear=[];answers={};decision=-1;note='';notice='';el.hidden=false;el.scrollTop=0;render()}
 function close(){const el=$('v2-intrade-overlay');if(el)el.hidden=true}
+window.CasaBankoInTradeReset={resume:()=>{const el=$('v2-intrade-overlay');if(!el||!setupId)return false;el.hidden=false;render();el.scrollTop=0;return true},pending:()=>!!setupId&&!!$('v2-intrade-overlay')?.hidden};
 function choices(items,current,attr){return '<div class="v2-it-options">'+items.map((t,i)=>'<button type="button" class="v2-it-option '+(current===i?'active':'')+'" '+attr+'="'+i+'" aria-pressed="'+(current===i)+'"><span class="v2-it-dot">'+(current===i?'✓':'')+'</span>'+esc(t)+'</button>').join('')+'</div>'}
 function fearChoices(){return '<div class="v2-it-options v2-it-fear-options">'+fears.map((t,i)=>'<button type="button" class="v2-it-option '+(fear.includes(i)?'active':'')+'" data-it-fear="'+i+'" aria-pressed="'+fear.includes(i)+'"><span class="v2-it-dot">'+(fear.includes(i)?'✓':'')+'</span>'+esc(t)+'</button>').join('')+'</div>'}
 function render(){const root=$('v2-intrade-content');if(!root)return;const logs=read();
