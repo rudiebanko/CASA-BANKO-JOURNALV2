@@ -68,6 +68,20 @@ async function refresh(){
  }catch(err){broadcast({status:'offline'});status('Broker refresh failed: '+err.message);el('v2-updated').textContent='Values may be stale. No local journal data was changed.'}
  finally{refreshing=false;el('v2-refresh').disabled=false}
 }
+window.CasaBankoV2Broker={
+ async syncTrades(){
+  if(!client||!account?.id)throw Error('Connect and select a TradeLocker account in Settings.');
+  const selectedId=String(account.id);
+  const {data:{session}}=await client.auth.getSession();
+  if(!session)throw Error('TradeLocker session expired. Sign in again.');
+  const {data,error}=await client.functions.invoke('tradelocker-sync',{body:{account}});
+  if(error||data?.error)throw Error(error?.message||data?.error||'Trade sync failed');
+  if(String(account?.id)!==selectedId)throw Error('Selected account changed during sync. Retry.');
+  if(!Array.isArray(data?.trades))throw Error('TradeLocker did not return a valid trades list.');
+  return {accountId:selectedId,trades:data.trades};
+ },
+ accountId(){return account?.id!=null?String(account.id):null}
+};
 async function start(){
  mount();
  try{
