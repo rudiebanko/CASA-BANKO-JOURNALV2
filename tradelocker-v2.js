@@ -93,5 +93,9 @@ async function start(){
   await loadConnection();
  }catch(err){status('Connection setup failed: '+err.message)}
 }
+function refreshWhenVisible(){if(!document.hidden&&account&&!refreshing)refresh()}
+setInterval(refreshWhenVisible,30*1000);
+window.addEventListener('focus',refreshWhenVisible);
+document.addEventListener('visibilitychange',refreshWhenVisible);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
