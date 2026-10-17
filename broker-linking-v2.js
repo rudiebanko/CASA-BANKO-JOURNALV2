@@ -5,7 +5,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const val=(o,...ks)=>{for(const k of ks)if(o?.[k]!==undefined&&o[k]!==null&&o[k]!=='')return o[k];return null};
 const id=t=>String(val(t,'clientTradeId','client_trade_id','positionId','position_id','tradeLockerId','id')||'');
 const isOpen=t=>t.tradeStatus==='OPEN'||t.isOpen===true||t.status==='OPEN';
-const net=t=>{const n=val(t,'netPnl','net_pnl','pnl','profitLoss');return n==null||!Number.isFinite(Number(n))?null:Number(n)};
+const net=t=>{const n=val(t,'netPnl','net_pnl','pnl','profitLoss');return n==null||!Number.isFinite(Number(n))?null:(Number(n)===0&&t.pnlExact!==true&&t.pnlSource!=='GENESIS'?null:Number(n))};
 const cash=n=>n==null?'—':(n>=0?'+':'')+'$'+Number(n).toFixed(2);
 const planTime=p=>{const raw=val(p,'createdAt','created','date','timestamp');if(raw==null)return 'Date unavailable';const d=new Date(raw);return Number.isFinite(d.getTime())?d.toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}):'Date unavailable'};
 let account=null,rows=[],links={},plans=[],busy=false,lastSync=0;const SYNC_MS=5*60*1000;
