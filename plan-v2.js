@@ -17,7 +17,7 @@ el.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{le
 el.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click',()=>{expandedSection=Number(b.dataset.next);renderChecks()}));
 el.querySelectorAll('[data-check]').forEach(input=>input.addEventListener('change',()=>{state.checks[input.dataset.check]=input.checked;renderChecks()}));
 el.querySelectorAll('[data-detail-field]').forEach(b=>b.addEventListener('click',()=>{state.checkDetails[b.dataset.detailField]=b.dataset.detailValue;if(b.dataset.detailField==='direction'&&b.dataset.detailValue!=='Consolidation')state.checkDetails.waitingFor='';renderChecks()}));
-const waiting=$('plan-consolidation-wait');if(waiting)waiting.addEventListener('input',()=>{state.checkDetails.waitingFor=waiting.value;progress()});
+const waiting=$('plan-consolidation-wait');if(waiting)waiting.addEventListener('input',()=>{state.checkDetails.waitingFor=waiting.value;const count=el.querySelector('[data-step="0"] .plan-step-count');if(count)count.textContent=steps[0][1].filter((_,j)=>checkReady('0-'+j)).length+'/3';progress()});
 progress()}
 function progress(){let done=steps.reduce((n,g,i)=>n+g[1].filter((_,j)=>checkReady(i+'-'+j)).length,0),total=steps.reduce((n,g)=>n+g[1].length,0);$('plan-progress').textContent=done+' / '+total+' completed';$('plan-save').disabled=false;$('plan-save').style.opacity='1'}
 const conditions=['Waiting for key level','Waiting for liquidity sweep','Waiting for bullish BOS','Waiting for bearish BOS','Waiting for pullback','Waiting for entry confirmation','Entry triggered','Setup invalidated'];
