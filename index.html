@@ -224,8 +224,8 @@ header{text-align:left;padding:17px 17px 15px;display:flex;align-items:center;ju
 #banko-history-view{display:flex;gap:8px;flex-wrap:nowrap;margin:10px 0 12px}
 #banko-history-view .pill{flex:0 1 auto!important;width:auto!important;min-width:0!important;min-height:34px!important;padding:8px 13px!important;border-radius:10px!important;font-size:11px!important;line-height:1.1!important;letter-spacing:.3px!important}
 .banko-calendar{margin:10px 0 18px;max-width:100%;min-width:0}
-.banko-cal-stats{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:8px;padding:8px 0 13px;margin-bottom:14px;border-bottom:1px solid #5b4822}
-.banko-cal-stats>div{display:flex;flex-direction:column;gap:5px;min-width:0}.banko-cal-stats small{font-size:9px;color:#b7a68a;font-weight:800;letter-spacing:.3px}.banko-cal-stats b{font-size:15px;color:#f3e9d2;overflow-wrap:anywhere}.banko-text-win{color:#35d99a!important}.banko-text-loss{color:#ff6262!important}
+.banko-cal-stats{display:grid;grid-template-columns:1.5fr 1.15fr repeat(3,.75fr);gap:5px;padding:8px 0 13px;margin-bottom:14px;border-bottom:1px solid #5b4822}
+.banko-cal-stats>div{display:flex;flex-direction:column;gap:5px;min-width:0}.banko-cal-stats small{font-size:9px;color:#b7a68a;font-weight:800;letter-spacing:.3px}.banko-cal-stats b{font-size:13px;color:#f3e9d2;overflow-wrap:anywhere}.banko-text-win{color:#35d99a!important}.banko-text-loss{color:#ff6262!important}
 .banko-cal-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 17px}.banko-cal-heading strong{font-size:16px;color:var(--gold);text-align:center;letter-spacing:.6px}
 .banko-cal-heading button{flex:0 0 32px!important;width:32px!important;height:36px!important;min-height:36px!important;padding:0!important;border:1px solid #7b5c24!important;border-radius:10px!important;background:#1b1812!important;color:#e4c46b!important;font-size:21px!important;line-height:1!important}
 .banko-cal-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;min-width:0}
@@ -257,4 +257,4 @@ el('header-pnl-value').textContent=valid?(amount>=0?'+':'')+new Intl.NumberForma
 const opening=balance-amount;
 el('header-pnl-percent').textContent=valid&&Number.isFinite(balance)&&opening>0?(amount>=0?'+':'')+(amount/opening*100).toFixed(2)+'%':'—';
 });})();
-</script><script src="./plan-v2.js?v=20261017-scroll-setups-fix-13" defer></script><script src="./tradelocker-v2.js?v=20261017-auto-refresh" defer></script><script src="./broker-linking-v2.js?v=20261017-calendar-filter-render-4" defer></script><script src="./genesis-reconcile-v2.js?v=20261017-v1-ported" defer></script></body></html>
+</script><script src="./plan-v2.js?v=20261017-scroll-setups-fix-13" defer></script><script src="./tradelocker-v2.js?v=20261017-auto-refresh" defer></script><script src="./broker-linking-v2.js?v=20261017-calendar-v1-metrics-5" defer></script><script src="./genesis-reconcile-v2.js?v=20261017-v1-ported" defer></script></body></html>
