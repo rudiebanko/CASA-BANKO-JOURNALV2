@@ -17,19 +17,20 @@ function mount(){
  #v2-broker input,#v2-broker select{width:100%;min-width:0;background:#090909;color:#fff;border:1px solid #55451e;border-radius:8px;padding:10px}
  #v2-broker button{border:1px solid #a88633;background:#201909;color:#eac76c;border-radius:8px;padding:9px 12px}
  #v2-broker button:disabled{opacity:.5}#v2-broker .v2-small{color:#aaa;font-size:11px;line-height:1.5}
- #v2-broker .v2-num{font-size:22px;color:#f3df99;font-weight:700}
+ #v2-broker .v2-num{font-size:22px;color:#f3df99;font-weight:700}#v2-account-list{display:grid;gap:10px;margin:12px 0}#v2-broker .v2-account-card{display:flex;width:100%;align-items:center;justify-content:space-between;text-align:left;background:#101010;border:1px solid #343434;border-radius:12px;padding:14px;color:#fff;gap:10px}#v2-broker .v2-account-card.selected{border-color:#d4af37;background:#19160e}#v2-broker .v2-account-card .v2-acct-label{font-weight:750;font-size:14px}#v2-broker .v2-account-card .v2-acct-balance{font-size:17px;font-weight:800;color:#f3df99}#v2-broker .v2-account-card .v2-acct-type{color:#999;font-size:11px;margin-top:4px}#v2-broker .v2-account-card .v2-check{color:#d4af37;font-size:22px}
  </style><h3>TRADELOCKER · CONNECTION</h3><div class="v2-small">Read-only broker preview. Your local journal entries remain separate. No live trade import yet.</div>
  <div id="v2-status" class="v2-small" role="status">Loading secure login…</div>
  <form id="v2-login" hidden><div class="v2-row"><input type="email" id="v2-email" autocomplete="username" placeholder="Supabase account email" required></div><div class="v2-row"><input type="password" id="v2-password" autocomplete="current-password" placeholder="Password" required></div><button type="submit">SIGN IN</button></form>
- <div id="v2-connected" hidden><div class="v2-row"><select id="v2-account" aria-label="TradeLocker account"></select></div>
+ <div id="v2-connected" hidden><div class="v2-small" style="margin-top:10px">SELECT TRADELOCKER ACCOUNT</div><div id="v2-account-list" role="group" aria-label="TradeLocker accounts"></div>
  <div id="v2-balance" class="v2-num">—</div><div id="v2-pnl" class="v2-small">Today's broker P&L: —</div>
  <div class="v2-row"><button id="v2-refresh">REFRESH BROKER</button><button id="v2-logout">SIGN OUT</button></div><div id="v2-updated" class="v2-small"></div></div>`;
- const app=document.querySelector('.app');const header=app?.querySelector('header');if(header)header.insertAdjacentElement('afterend',root);else document.body.prepend(root);
+ const slot=document.getElementById('v2-settings-slot');if(slot)slot.append(root);else document.body.append(root);
  el('v2-login').addEventListener('submit',login);
- el('v2-account').addEventListener('change',()=>{account=connection?.account_summary?.accounts?.find(a=>String(a.id)===el('v2-account').value);if(account){localStorage.setItem('cb-v2-selected-account',String(account.id));refresh()}});
+
  el('v2-refresh').addEventListener('click',refresh);
  el('v2-logout').addEventListener('click',async()=>{await client.auth.signOut();connection=null;account=null;showLogin('Signed out.');});
 }
+function renderAccounts(){const list=el('v2-account-list');if(!list)return;list.replaceChildren();(connection?.account_summary?.accounts||[]).forEach((a,i)=>{const id=String(a.id);const active=String(account?.id)===id;const btn=document.createElement('button');btn.type='button';btn.className='v2-account-card'+(active?' selected':'');btn.setAttribute('aria-pressed',String(active));const left=document.createElement('span');const label=document.createElement('div');label.className='v2-acct-label';label.textContent='Account '+String(a.accNum||a.accountId||a.id||i+1);const type=document.createElement('div');type.className='v2-acct-type';type.textContent=String(connection?.environment||'TRADELOCKER').toUpperCase()+' · '+String(connection?.server||'BROKER');left.append(label,type);const right=document.createElement('span');const balance=document.createElement('div');balance.className='v2-acct-balance';const raw=Number(a.balance??a.accountBalance??a.equity);balance.textContent=Number.isFinite(raw)?money(raw,a.currency||'USD'):'Tap to view balance';right.append(balance);if(active){const check=document.createElement('div');check.className='v2-check';check.textContent='✓';right.append(check)}btn.append(left,right);btn.addEventListener('click',()=>{if(String(account?.id)===id)return;account=a;localStorage.setItem('cb-v2-selected-account',id);el('v2-balance').textContent='Loading selected balance…';el('v2-pnl').textContent='Today’s broker P&L: —';renderAccounts();refresh()});list.append(btn)})}
 function showLogin(message){el('v2-login').hidden=false;el('v2-connected').hidden=true;status(message||'Sign in using the same account as your existing CASA BANKO Journal.');}
 async function login(e){e.preventDefault();const b=e.submitter;b.disabled=true;status('Signing in…');try{const {error}=await client.auth.signInWithPassword({email:el('v2-email').value,password:el('v2-password').value});if(error)throw error;el('v2-password').value='';await loadConnection()}catch(err){showLogin('Sign in failed: '+err.message)}finally{b.disabled=false}}
 async function loadConnection(){
@@ -41,10 +42,8 @@ async function loadConnection(){
  connection=data;
  const accounts=data.account_summary?.accounts||[];
  if(!accounts.length){showLogin('Connected, but no TradeLocker accounts were returned.');return}
- const select=el('v2-account');select.replaceChildren();
- accounts.forEach((a,i)=>{const o=document.createElement('option');o.value=String(a.id);o.textContent='Account '+String(a.accNum||a.accountId||a.id||i+1);select.append(o)});
  const saved=localStorage.getItem('cb-v2-selected-account');
- account=accounts.find(a=>String(a.id)===saved)||accounts[0];select.value=String(account.id);
+ account=accounts.find(a=>String(a.id)===saved)||accounts[0];renderAccounts();
  el('v2-login').hidden=true;el('v2-connected').hidden=false;status('Authenticated · connected account');
  await refresh();
 }
@@ -60,7 +59,7 @@ async function refresh(){
  try{
   const state=await invoke('tradelocker-account-state');
   if(String(state.accountId)!==String(account.id))throw Error('Broker account ID mismatch');
-  const cur=state.currency||'USD';el('v2-balance').textContent='Balance: '+money(state.balance,cur);
+  const cur=state.currency||'USD';el('v2-balance').textContent='Balance: '+money(state.balance,cur);account.balance=Number(state.balance);account.currency=cur;renderAccounts();
   const day=await invoke('tradelocker-daily-pnl');
   el('v2-pnl').textContent='Today’s broker P&L: '+(day.available&&Number.isFinite(Number(day.todayPnl))?money(day.todayPnl,cur):'Unavailable');
   el('v2-updated').textContent='Last refreshed: '+new Date().toLocaleString();
