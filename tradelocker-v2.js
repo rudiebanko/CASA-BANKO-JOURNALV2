@@ -24,7 +24,7 @@ function mount(){
  <div id="v2-connected" hidden><div class="v2-small" style="margin-top:10px">SELECT TRADELOCKER ACCOUNT</div><div id="v2-account-list" role="group" aria-label="TradeLocker accounts"></div>
  <div id="v2-balance" class="v2-num">—</div><div id="v2-pnl" class="v2-small">Today's broker P&L: —</div>
  <div class="v2-row"><button id="v2-refresh">REFRESH BROKER</button><button id="v2-logout">SIGN OUT</button></div><div id="v2-updated" class="v2-small"></div></div>`;
- const slot=document.getElementById('v2-settings-slot');if(slot)slot.append(root);else document.body.append(root);
+ const slot=document.getElementById('v2-settings-slot');if(!slot)throw new Error('Settings mount missing; refusing to display TradeLocker on LOG screen');slot.append(root);
  el('v2-login').addEventListener('submit',login);
 
  el('v2-refresh').addEventListener('click',refresh);
