@@ -7,7 +7,7 @@ let client,connection,account,refreshing=false;
 const el=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const money=(n,cur='USD')=>Number.isFinite(Number(n))?new Intl.NumberFormat('en-US',{style:'currency',currency:cur}).format(Number(n)):'—';
-function status(s){el('v2-status').textContent=s;}
+function broadcast(detail){window.dispatchEvent(new CustomEvent('casa-banko:broker-state',{detail}))}\nfunction status(s){el('v2-status').textContent=s;}
 function mount(){
  const root=document.createElement('section');root.id='v2-broker';
  root.innerHTML=`<style>
@@ -31,7 +31,7 @@ function mount(){
  el('v2-logout').addEventListener('click',async()=>{await client.auth.signOut();connection=null;account=null;showLogin('Signed out.');});
 }
 function renderAccounts(){const list=el('v2-account-list');if(!list)return;list.replaceChildren();(connection?.account_summary?.accounts||[]).forEach((a,i)=>{const id=String(a.id);const active=String(account?.id)===id;const btn=document.createElement('button');btn.type='button';btn.className='v2-account-card'+(active?' selected':'');btn.setAttribute('aria-pressed',String(active));const left=document.createElement('span');const label=document.createElement('div');label.className='v2-acct-label';label.textContent='Account '+String(a.accNum||a.accountId||a.id||i+1);const type=document.createElement('div');type.className='v2-acct-type';type.textContent=String(connection?.environment||'TRADELOCKER').toUpperCase()+' · '+String(connection?.server||'BROKER');left.append(label,type);const right=document.createElement('span');const balance=document.createElement('div');balance.className='v2-acct-balance';const raw=Number(a.balance??a.accountBalance??a.equity);balance.textContent=Number.isFinite(raw)?money(raw,a.currency||'USD'):'Tap to view balance';right.append(balance);if(active){const check=document.createElement('div');check.className='v2-check';check.textContent='✓';right.append(check)}btn.append(left,right);btn.addEventListener('click',()=>{if(String(account?.id)===id)return;account=a;localStorage.setItem('cb-v2-selected-account',id);el('v2-balance').textContent='Loading selected balance…';el('v2-pnl').textContent='Today’s broker P&L: —';renderAccounts();refresh()});list.append(btn)})}
-function showLogin(message){el('v2-login').hidden=false;el('v2-connected').hidden=true;status(message||'Sign in using the same account as your existing CASA BANKO Journal.');}
+function showLogin(message){broadcast({status:'offline'});el('v2-login').hidden=false;el('v2-connected').hidden=true;status(message||'Sign in using the same account as your existing CASA BANKO Journal.');}
 async function login(e){e.preventDefault();const b=e.submitter;b.disabled=true;status('Signing in…');try{const {error}=await client.auth.signInWithPassword({email:el('v2-email').value,password:el('v2-password').value});if(error)throw error;el('v2-password').value='';await loadConnection()}catch(err){showLogin('Sign in failed: '+err.message)}finally{b.disabled=false}}
 async function loadConnection(){
  const {data:{session}}=await client.auth.getSession();if(!session){showLogin();return}
@@ -55,16 +55,16 @@ async function invoke(name){
  return data;
 }
 async function refresh(){
- if(refreshing||!account)return;refreshing=true;el('v2-refresh').disabled=true;status('Refreshing broker account…');
+ if(refreshing||!account)return;refreshing=true;el('v2-refresh').disabled=true;status('Refreshing broker account…');broadcast({status:'syncing'});
  try{
   const state=await invoke('tradelocker-account-state');
   if(String(state.accountId)!==String(account.id))throw Error('Broker account ID mismatch');
   const cur=state.currency||'USD';el('v2-balance').textContent='Balance: '+money(state.balance,cur);account.balance=Number(state.balance);account.currency=cur;renderAccounts();
   const day=await invoke('tradelocker-daily-pnl');
-  el('v2-pnl').textContent='Today’s broker P&L: '+(day.available&&Number.isFinite(Number(day.todayPnl))?money(day.todayPnl,cur):'Unavailable');
+  el('v2-pnl').textContent='Today’s broker P&L: '+(day.available&&Number.isFinite(Number(day.todayPnl))?money(day.todayPnl,cur):'Unavailable');broadcast({status:'connected',available:day.available===true,todayPnl:day.todayPnl,balance:state.balance,currency:cur});
   el('v2-updated').textContent='Last refreshed: '+new Date().toLocaleString();
   status('Connected · broker values');
- }catch(err){status('Broker refresh failed: '+err.message);el('v2-updated').textContent='Values may be stale. No local journal data was changed.'}
+ }catch(err){broadcast({status:'offline'});status('Broker refresh failed: '+err.message);el('v2-updated').textContent='Values may be stale. No local journal data was changed.'}
  finally{refreshing=false;el('v2-refresh').disabled=false}
 }
 async function start(){
