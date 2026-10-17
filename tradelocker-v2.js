@@ -7,7 +7,8 @@ let client,connection,account,refreshing=false;
 const el=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const money=(n,cur='USD')=>Number.isFinite(Number(n))?new Intl.NumberFormat('en-US',{style:'currency',currency:cur}).format(Number(n)):'—';
-function broadcast(detail){window.dispatchEvent(new CustomEvent('casa-banko:broker-state',{detail}))}\nfunction status(s){el('v2-status').textContent=s;}
+function broadcast(detail){window.dispatchEvent(new CustomEvent('casa-banko:broker-state',{detail}))}
+function status(s){el('v2-status').textContent=s;}
 function mount(){
  const root=document.createElement('section');root.id='v2-broker';
  root.innerHTML=`<style>
