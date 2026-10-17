@@ -218,6 +218,14 @@ header{text-align:left;padding:17px 17px 15px;display:flex;align-items:center;ju
 
 
 /* HISTORY calendar — V1 eight-column structure, V2 black/gold palette */
+/* Calendar displays all month rows; retain bounded scrolling in LIST VIEW only. */
+#broker-history-items:has(.banko-calendar){max-height:none!important;overflow:visible!important;padding-right:0!important}
+#history:has(.banko-calendar) .card{overflow:visible}
+.navinner .tab{font-size:9px!important;letter-spacing:1px!important;gap:3px!important;padding:4px 0!important}
+.navinner .tab-icon{font-size:17px!important}
+.navinner .tab-label{font-size:9px!important}
+.bottom{min-height:64px!important;padding-top:5px!important;padding-bottom:calc(6px + env(safe-area-inset-bottom))!important}
+
 .banko-cal-quick{display:flex;gap:6px;flex-wrap:nowrap;margin:4px 0 14px}.banko-cal-quick .pill{flex:1 1 0!important;min-width:0!important;width:auto!important;min-height:32px!important;padding:7px 4px!important;font-size:10px!important;line-height:1.1!important;letter-spacing:0!important;border-radius:8px!important;white-space:nowrap!important}
 
 #broker-history-filters[hidden]{display:none!important}
