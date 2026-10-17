@@ -9,7 +9,7 @@ const qs=[
 ['Am I wanting to exit because of price action or because my position is negative?','Separate what price is actually showing me from the fear of losing money.',['Price action','Floating loss','Both']]
 ];
 const decisions=['Follow my original trade plan','Exit according to my invalidation rules','Manage risk according to my plan'];
-let step=1,fear=[],answers={},decision=-1,note='',notice=';
+let step=1,fear=[],answers={},decision=-1,note='',notice='';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
 function show(){const el=$('v2-intrade-overlay');if(!el)return;el.hidden=false;el.scrollTop=0;render()}
