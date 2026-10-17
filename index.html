@@ -218,6 +218,8 @@ header{text-align:left;padding:17px 17px 15px;display:flex;align-items:center;ju
 
 
 /* HISTORY calendar — V1 eight-column structure, V2 black/gold palette */
+/* Only the selected calendar day's/week's trade entries scroll, not the calendar grid. */
+.banko-cal-details .banko-cal-trade-scroll{max-height:min(42vh,360px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:5px;scrollbar-width:thin;scrollbar-color:#78602c transparent}
 /* Calendar displays all month rows; retain bounded scrolling in LIST VIEW only. */
 #broker-history-items:has(.banko-calendar){max-height:none!important;overflow:visible!important;padding-right:0!important}
 #history:has(.banko-calendar) .card{overflow:visible}
