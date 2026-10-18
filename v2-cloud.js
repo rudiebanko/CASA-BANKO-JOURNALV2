@@ -8,6 +8,7 @@ function status(msg,bad=false){const e=$('v2-cloud-status');if(e){e.textContent=
 function openDb(){return new Promise((ok,no)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('data'))r.result.createObjectStore('data')};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
 async function readSetups(){const d=await openDb();return new Promise((ok,no)=>{const t=d.transaction('data'),r=t.objectStore('data').get('setups');r.onsuccess=()=>ok(Array.isArray(r.result)?r.result:[]);r.onerror=()=>no(r.error);t.oncomplete=()=>d.close()})}
 async function writeSetups(rows){const d=await openDb();return new Promise((ok,no)=>{const t=d.transaction('data','readwrite');t.objectStore('data').put(rows,'setups');t.oncomplete=()=>{d.close();ok()};t.onerror=()=>no(t.error)})}
+async function safetyBackup(setups,history){const d=await new Promise((ok,no)=>{const r=indexedDB.open('casa-banko-v2-cloud-safety',1);r.onupgradeneeded=()=>r.result.createObjectStore('snapshots',{keyPath:'savedAt'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});return new Promise((ok,no)=>{const t=d.transaction('snapshots','readwrite');t.objectStore('snapshots').put({savedAt:new Date().toISOString(),setups,history});t.oncomplete=()=>{d.close();ok()};t.onerror=()=>no(t.error)})}
 function readHistory(){try{const a=JSON.parse(localStorage.getItem(HISTORY)||'[]');return Array.isArray(a)?a:[]}catch{return []}}
 function stamp(s){return Date.parse(s.updatedAt||s.created||s.date||'')||0}
 function merge(a,b){const m=new Map();for(const x of [...b,...a]){if(!x||!x.id)continue;const old=m.get(String(x.id));if(!old||stamp(x)>=stamp(old))m.set(String(x.id),x)}return [...m.values()].sort((a,b)=>stamp(b)-stamp(a))}
@@ -22,7 +23,7 @@ async function pullAndMerge(){
  const cloudHistory=(data||[]).filter(x=>x.document_type==='intrade_reset').map(x=>x.payload);
  const setups=merge(localSetups,cloudSetups),history=merge(localHistory,cloudHistory);
  // Never replace local data without first recording a recovery copy.
- try{localStorage.setItem(BACKUP,JSON.stringify({savedAt:new Date().toISOString(),setups:localSetups,history:localHistory}))}catch(e){throw Error('Safety backup could not be saved. Cloud merge stopped: '+e.message)}
+ try{await safetyBackup(localSetups,localHistory)}catch(e){throw Error('Safety backup could not be saved. Cloud merge stopped: '+e.message)}
  if(JSON.stringify(localSetups)!==JSON.stringify(setups))await writeSetups(setups);
  if(JSON.stringify(localHistory)!==JSON.stringify(history))localStorage.setItem(HISTORY,JSON.stringify(history));
  refresh();
