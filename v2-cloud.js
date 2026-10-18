@@ -17,8 +17,8 @@ function readJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')}
 async function journalDb(){return new Promise((ok,no)=>{const r=indexedDB.open(JOURNAL_DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('state'))r.result.createObjectStore('state')};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
 async function readJournal(){const d=await journalDb();return new Promise((ok,no)=>{const t=d.transaction('state'),r=t.objectStore('state').get('journal');r.onsuccess=()=>ok(r.result||null);r.onerror=()=>no(r.error);t.oncomplete=()=>d.close()})}
 async function writeJournal(data){const d=await journalDb();return new Promise((ok,no)=>{const t=d.transaction('state','readwrite');t.objectStore('state').put(data,'journal');t.oncomplete=()=>{d.close();ok()};t.onerror=()=>no(t.error)})}
-function journalItems(j){return (j?.trades||[]).map(x=>({...x,id:String(x.id||x.clientTradeId||'trade-'+x.created)}))}
-function historyItems(j){return (j?.history||[]).map(x=>({...x,id:String(x.id||'history-'+x.created)}))}
+function journalItems(j){return (j?.trades||[]).map(x=>({...x,id:x.id??x.clientTradeId??('trade-'+x.created)}))}
+function historyItems(j){return (j?.history||[]).map(x=>({...x,id:x.id??('history-'+x.created)}))}
 function merge(a,b){const m=new Map();for(const x of [...a,...b]){if(!x||!x.id)continue;const old=m.get(String(x.id));if(!old||stamp(x)>stamp(old))m.set(String(x.id),x)}return [...m.values()].sort((a,b)=>stamp(b)-stamp(a))}
 function refresh(){window.dispatchEvent(new Event('cb-v2-cloud-setups-loaded'))}
 function paint(){const connected=!!user;$('v2-cloud-out')?.toggleAttribute('hidden',connected);$('v2-cloud-in')?.toggleAttribute('hidden',!connected);if($('v2-cloud-email-label'))$('v2-cloud-email-label').textContent=user?.email||'';if($('v2-cloud-badge'))$('v2-cloud-badge').textContent=connected?'CONNECTED':'NOT CONNECTED'}
@@ -26,8 +26,7 @@ async function pullAndMerge(){
  if(!user)throw Error('Sign in first.');
  const [localSetups,localHistory,localJournal]=await Promise.all([readSetups(),Promise.resolve(readHistory()),readJournal()]);
  const localMissed=readList(MISSED),localUrge=readList(URGE),localFlip=readJson(FLIP);
- const {data,error}=await sb.from('v2_cloud_documents').select('document_type,document_id,payload').eq('user_id',user.id);
- if(error)throw error;
+ const data=[];for(let offset=0;;offset+=500){const {data:page,error}=await sb.from('v2_cloud_documents').select('document_type,document_id,payload').eq('user_id',user.id).range(offset,offset+499);if(error)throw error;data.push(...(page||[]));if(!page||page.length<500)break}
  const cloudSetups=(data||[]).filter(x=>x.document_type==='planned_setup').map(x=>x.payload);
  const cloudHistory=(data||[]).filter(x=>x.document_type==='intrade_reset').map(x=>x.payload);
  const setups=merge(localSetups,cloudSetups),history=merge(localHistory,cloudHistory);
