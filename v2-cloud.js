@@ -19,7 +19,7 @@ async function readJournal(){const d=await journalDb();return new Promise((ok,no
 async function writeJournal(data){const d=await journalDb();return new Promise((ok,no)=>{const t=d.transaction('state','readwrite');t.objectStore('state').put(data,'journal');t.oncomplete=()=>{d.close();ok()};t.onerror=()=>no(t.error)})}
 function journalItems(j){return (j?.trades||[]).map(x=>({...x,id:String(x.id||x.clientTradeId||'trade-'+x.created)}))}
 function historyItems(j){return (j?.history||[]).map(x=>({...x,id:String(x.id||'history-'+x.created)}))}
-function merge(a,b){const m=new Map();for(const x of [...b,...a]){if(!x||!x.id)continue;const old=m.get(String(x.id));if(!old||stamp(x)>=stamp(old))m.set(String(x.id),x)}return [...m.values()].sort((a,b)=>stamp(b)-stamp(a))}
+function merge(a,b){const m=new Map();for(const x of [...a,...b]){if(!x||!x.id)continue;const old=m.get(String(x.id));if(!old||stamp(x)>stamp(old))m.set(String(x.id),x)}return [...m.values()].sort((a,b)=>stamp(b)-stamp(a))}
 function refresh(){window.dispatchEvent(new Event('cb-v2-cloud-setups-loaded'))}
 function paint(){const connected=!!user;$('v2-cloud-out')?.toggleAttribute('hidden',connected);$('v2-cloud-in')?.toggleAttribute('hidden',!connected);if($('v2-cloud-email-label'))$('v2-cloud-email-label').textContent=user?.email||'';if($('v2-cloud-badge'))$('v2-cloud-badge').textContent=connected?'CONNECTED':'NOT CONNECTED'}
 async function pullAndMerge(){
@@ -37,14 +37,16 @@ async function pullAndMerge(){
  const historyRows=merge(historyItems(localJournal),(data||[]).filter(x=>x.document_type==='journal_history').map(x=>x.payload));
  const cloudFlip=(data||[]).find(x=>x.document_type==='flip_state'&&x.document_id==='current');
  // Do not overwrite a locally configured challenge with a different device's challenge automatically.
- const flip=localFlip||cloudFlip?.payload||null;
+ const cloudFlipState=cloudFlip?.payload||null;
+ const localFlipTime=Date.parse(localFlip?._cloudUpdatedAt||'')||0,cloudFlipTime=Date.parse(cloudFlipState?._cloudUpdatedAt||'')||0;
+ const flip=localFlip&&cloudFlipState?(localFlipTime>=cloudFlipTime?localFlip:cloudFlipState):(localFlip||cloudFlipState||null);
  // Never replace local data without first recording a recovery copy.
  try{await safetyBackup(localSetups,localHistory,{missed:localMissed,urge:localUrge,flip:localFlip,journal:localJournal})}catch(e){throw Error('Safety backup could not be saved. Cloud merge stopped: '+e.message)}
  if(JSON.stringify(localSetups)!==JSON.stringify(setups))await writeSetups(setups);
  if(JSON.stringify(localHistory)!==JSON.stringify(history))localStorage.setItem(HISTORY,JSON.stringify(history));
  if(JSON.stringify(localMissed)!==JSON.stringify(missed))localStorage.setItem(MISSED,JSON.stringify(missed));
  if(JSON.stringify(localUrge)!==JSON.stringify(urge))localStorage.setItem(URGE,JSON.stringify(urge));
- if(!localFlip&&flip)localStorage.setItem(FLIP,JSON.stringify(flip));
+ if(flip&&JSON.stringify(localFlip)!==JSON.stringify(flip))localStorage.setItem(FLIP,JSON.stringify(flip));
  const journal={trades:tradeRows,history:historyRows,nextId:Math.max(Number(localJournal?.nextId)||1,...tradeRows.map(x=>Number(x.id)||0))+1};
  if(JSON.stringify(localJournal?.trades||[])!==JSON.stringify(tradeRows)||JSON.stringify(localJournal?.history||[])!==JSON.stringify(historyRows))await writeJournal(journal);
  refresh();window.dispatchEvent(new Event('cb-v2-cloud-other-loaded'));
