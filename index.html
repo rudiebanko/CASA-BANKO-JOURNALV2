@@ -291,9 +291,10 @@ header{text-align:left;padding:17px 17px 15px;display:flex;align-items:center;ju
 
 
 /* V2.1 responsive screenshot preview: native image dimensions select layout, never crop charts. */
+/* Setup preview images remain inside the existing clickable setup-card button, which opens full analysis. */
 @media(max-width:700px){
-#plan .planned-card-list .setup-thumb.cb-v21-portrait{aspect-ratio:auto!important;height:auto!important;max-height:390px!important;min-height:0!important;padding:0!important;background:#101419}
-#plan .planned-card-list .setup-thumb.cb-v21-portrait img{display:block;width:auto!important;height:auto!important;max-width:100%!important;max-height:390px!important;object-fit:contain!important;margin:auto}
+#plan .planned-card-list .setup-thumb.cb-v21-portrait{aspect-ratio:auto!important;height:auto!important;max-height:300px!important;min-height:0!important;padding:0!important;background:#101419}
+#plan .planned-card-list .setup-thumb.cb-v21-portrait img{display:block;width:auto!important;height:auto!important;max-width:100%!important;max-height:300px!important;object-fit:contain!important;margin:auto}
 #plan .planned-card-list .setup-thumb.cb-v21-landscape{aspect-ratio:auto!important;height:auto!important;max-height:250px!important;min-height:0!important;background:#101419}
 #plan .planned-card-list .setup-thumb.cb-v21-landscape img{display:block;width:100%!important;height:auto!important;max-height:250px!important;object-fit:contain!important}
 #plan .planned-card-list .setup-thumb.cb-v21-square{aspect-ratio:auto!important;height:auto!important;max-height:300px!important;min-height:0!important;background:#101419}
