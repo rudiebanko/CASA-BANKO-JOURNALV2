@@ -5,8 +5,16 @@ const checkKey=(i,j)=>i===1?'1-'+(j+1):i===3&&j===3?'1-0':i+'-'+j;
 const checkLabel=(i,j)=>steps[i][1][j];
 const state={checks:{},checkDetails:{session:'',timeframe:'',direction:'',waitingFor:'',marketPhase:'',bosTimeframe:'',bosDirection:'',brokenLevel:'',structureDirection:'',areaTimeframes:[],areaTypes:[],liquidityTypes:[],liquidityType:'Daily',liquiditySide:'High',setupType:'',setupDirection:'',entryConfirmations:[],invalidationType:'',invalidationOther:'',invalidationPrice:'',targetType:'Daily',targetSide:'High',targets:[]},images:[],setups:[]};const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const db=new Promise((ok,no)=>{let r=indexedDB.open('casa-banko-v2-planned-setups',1);r.onupgradeneeded=()=>r.result.createObjectStore('data');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
-async function save(){try{const d=await db;await new Promise((ok,no)=>{let tx=d.transaction('data','readwrite');tx.objectStore('data').put(state.setups,'setups');tx.oncomplete=ok;tx.onerror=()=>no(tx.error)})}catch(e){console.error(e);alert('Could not save setup. Please check your device storage.');return false}return true} 
-async function load(){try{const d=await db;state.setups=await new Promise((ok,no)=>{let r=d.transaction('data').objectStore('data').get('setups');r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)})}catch(e){console.error('Setup restore failed',e)}renderSetups()}
+let savedFingerprints=new Map();
+function fingerprint(x){const {updatedAt,...rest}=x;return JSON.stringify(rest)}
+async function save(){const previous=state.setups.map(x=>[x,x.updatedAt]);try{
+ for(const x of state.setups){if(savedFingerprints.get(String(x.id))!==fingerprint(x))x.updatedAt=new Date().toISOString()}
+ const d=await db;await new Promise((ok,no)=>{let tx=d.transaction('data','readwrite');tx.objectStore('data').put(state.setups,'setups');tx.oncomplete=ok;tx.onerror=()=>no(tx.error)});
+ savedFingerprints=new Map(state.setups.map(x=>[String(x.id),fingerprint(x)]));
+ window.dispatchEvent(new Event('cb-v2-local-changed'));
+ }catch(e){previous.forEach(([x,v])=>{if(v===undefined)delete x.updatedAt;else x.updatedAt=v});console.error(e);alert('Could not save setup. Please check your device storage.');return false}return true}
+async function load(){try{const d=await db;state.setups=await new Promise((ok,no)=>{let r=d.transaction('data').objectStore('data').get('setups');r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)});savedFingerprints=new Map(state.setups.map(x=>[String(x.id),fingerprint(x)]))}catch(e){console.error('Setup restore failed',e)}renderSetups()}
+window.addEventListener('cb-v2-cloud-setups-loaded',()=>load());
 let expandedSection=0;const expandedChecks=new Set();
 const sessionChoices=[['ASIA','Asia'],['LONDON','London'],['NEW YORK','New York']];
 const timeframeChoices=['15M','30M','1H','4H','Daily','Weekly'];
