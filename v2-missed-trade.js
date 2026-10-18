@@ -16,7 +16,7 @@ if(e.target.closest('[data-missed-close]')){close();return}
 const b=e.target.closest('[data-missed-check]');if(b){const i=Number(b.dataset.missedCheck);if(selected.has(i))selected.delete(i);else selected.add(i);notice='';render();return}
 if(e.target.closest('[data-missed-reset]')){selected.clear();notice='';reflection='';render();return}
 if(e.target.closest('[data-missed-return]')){if(selected.size===4){close();$('plan')?.scrollIntoView({block:'start'});notice=''}return}
-if(e.target.closest('[data-missed-save]')){if(selected.size!==4)return;reflection=$('v2-missed-note')?.value||'';const logs=read();logs.unshift({id:crypto.randomUUID(),date:new Date().toISOString(),mode:'missed',decision:'missed',answers:checks.map(c=>c[0]),note:reflection.trim()});try{localStorage.setItem(KEY,JSON.stringify(logs));notice='Saved on this device in Missed-Trade Reset History.';reflection='';render()}catch{notice='Unable to save. Check browser storage.';render()}return}
+if(e.target.closest('[data-missed-save]')){if(selected.size!==4)return;reflection=$('v2-missed-note')?.value||'';const logs=read();logs.unshift({id:crypto.randomUUID(),date:new Date().toISOString(),mode:'missed',decision:'missed',answers:checks.map(c=>c[0]),note:reflection.trim()});try{localStorage.setItem(KEY,JSON.stringify(logs));window.dispatchEvent(new Event('cb-v2-local-changed'));notice='Saved on this device in Missed-Trade Reset History.';reflection='';render()}catch{notice='Unable to save. Check browser storage.';render()}return}
 });
 document.addEventListener('input',e=>{if(e.target.id==='v2-missed-note')reflection=e.target.value});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('v2-missed-overlay')?.hidden)close()});
