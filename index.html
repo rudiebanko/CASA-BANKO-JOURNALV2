@@ -548,7 +548,11 @@ body.cb-setup-detail .cb-v21-process-group,
 body.cb-setup-detail .cb-v21-additional-group,
 body.cb-setup-detail .app header{display:none!important}
 body.cb-setup-detail .app{padding-bottom:0!important}
-body.cb-setup-detail #planned-items>details.cb-min-result>summary{padding-left:0!important;margin-left:0!important}
+/* Normalize the inherited card's internal content offset, not just the label. */
+body.cb-setup-detail #planned-items>details.cb-min-result,
+#planned-items:has(#back-setup)>details.cb-min-result{margin-left:0!important;margin-right:0!important;padding-left:0!important;padding-right:0!important;transform:none!important}
+body.cb-setup-detail #planned-items>details.cb-min-result>summary,
+#planned-items:has(#back-setup)>details.cb-min-result>summary{margin:0!important;padding-left:0!important;padding-right:0!important;text-indent:0!important;transform:none!important;position:relative!important;left:0!important;box-sizing:border-box!important}
 body.cb-setup-detail #planned-items>details.cb-v21-entries-fold>summary,
 body.cb-setup-detail #planned-items>details.cb-min-result>summary,
 body.cb-setup-detail #planned-items>details.cb-min-management>summary,
