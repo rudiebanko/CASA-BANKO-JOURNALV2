@@ -19,7 +19,7 @@ async function readJournal(){const d=await journalDb();return new Promise((ok,no
 async function writeJournal(data){const d=await journalDb();return new Promise((ok,no)=>{const t=d.transaction('state','readwrite');t.objectStore('state').put(data,'journal');t.oncomplete=()=>{d.close();ok()};t.onerror=()=>no(t.error)})}
 function journalItems(j){return (j?.trades||[]).map(x=>({...x,id:x.id??x.clientTradeId??('trade-'+x.created)}))}
 function historyItems(j){return (j?.history||[]).map(x=>({...x,id:x.id??('history-'+x.created)}))}
-function merge(a,b){const m=new Map();for(const x of [...a,...b]){if(!x||!x.id)continue;const old=m.get(String(x.id));if(!old||stamp(x)>stamp(old))m.set(String(x.id),x)}return [...m.values()].sort((a,b)=>stamp(b)-stamp(a))}
+function merge(a,b){const m=new Map();for(const x of [...a,...b]){if(!x||!x.id)continue;const old=m.get(String(x.id));if(!old||(x.deleted&&!old.deleted)||(!old.deleted&&stamp(x)>stamp(old))||(old.deleted&&x.deleted&&stamp(x)>stamp(old)))m.set(String(x.id),x)}return [...m.values()].sort((a,b)=>stamp(b)-stamp(a))}
 function refresh(){window.dispatchEvent(new Event('cb-v2-cloud-setups-loaded'))}
 function paint(){const connected=!!user;$('v2-cloud-out')?.toggleAttribute('hidden',connected);$('v2-cloud-in')?.toggleAttribute('hidden',!connected);if($('v2-cloud-email-label'))$('v2-cloud-email-label').textContent=user?.email||'';if($('v2-cloud-badge'))$('v2-cloud-badge').textContent=connected?'CONNECTED':'NOT CONNECTED'}
 async function pullAndMerge(){
@@ -67,7 +67,7 @@ async function sync(){if(!user||busy)return;busy=true;status('SYNCING…');try{
  await pushRows('journal_trade',tradeRows);
  await pushRows('journal_history',historyRows);
  if(flip){const {error}=await sb.from('v2_cloud_documents').upsert({user_id:user.id,document_type:'flip_state',document_id:'current',payload:flip},{onConflict:'user_id,document_type,document_id'});if(error)throw error}
- ready=true;status('✓ CLOUD SYNCED · '+setups.length+' SETUPS · '+(history.length+missed.length+urge.length)+' RESET LOGS');
+ ready=true;status('✓ CLOUD SYNCED · '+setups.filter(x=>!x.deleted).length+' SETUPS · '+(history.length+missed.length+urge.length)+' RESET LOGS');
  }catch(e){console.error('V2 cloud:',e);status('SYNC FAILED — LOCAL DATA PRESERVED. '+e.message,true)}finally{busy=false}}
 function schedule(){if(!ready||!user)return;clearTimeout(timer);timer=setTimeout(sync,1400)}
 async function login(signup){const email=$('v2-cloud-email').value.trim(),password=$('v2-cloud-password').value;if(!email||!password){status('Enter your email and password.',true);return}status('CONNECTING…');const {error}=signup?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(error)status(error.message,true);else if(signup)status('Check your email if confirmation is required.');else status('CONNECTED — LOADING CLOUD…')}
