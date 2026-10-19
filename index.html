@@ -557,15 +557,15 @@ body.cb-setup-detail #planned-items>details.cb-min-review>summary{min-height:64p
 </style><style id="cb-a4-main-design">
 /* A4 Main / Plan design: presentation only; existing data and handlers retained. */
 #plan{--a4-line:#292621;--a4-green:#36c778}
-#plan .planned-list-shell{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:6px 0 14px!important;box-shadow:none!important}
+#plan .planned-list-shell{box-sizing:border-box!important;width:100%!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:6px 0 14px!important;box-shadow:none!important}
 #plan .cb-a4-label{font-size:10px;letter-spacing:.18em;font-weight:750;color:var(--gold);padding:10px 0 7px}
 #plan .planned-card-list{border:0!important}
-#plan .cb-v21-setup-wrap{position:relative;border-bottom:1px solid var(--a4-line);padding:7px 0 13px;margin:0!important;background:transparent!important}
-#plan .cb-v21-setup-wrap>.setup-card{display:flex!important;flex-direction:column!important;align-items:stretch!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;gap:8px!important;margin:0!important}
-#plan .planned-card-list .setup-card-main{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important}
+#plan .cb-v21-setup-wrap{box-sizing:border-box!important;width:100%!important;position:relative;border-bottom:1px solid var(--a4-line);padding:7px 0 13px;margin:0!important;background:transparent!important}
+#plan .cb-v21-setup-wrap>.setup-card{box-sizing:border-box!important;width:100%!important;min-width:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;gap:8px!important;margin:0!important}
+#plan .planned-card-list .setup-card-main{box-sizing:border-box!important;width:100%!important;min-width:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:9px!important}
 #plan .planned-card-list .setup-card-content{padding:0!important;width:100%!important}
 #plan .planned-card-list .setup-card-top strong{font-size:19px!important;letter-spacing:-.025em!important}
-#plan .planned-card-list .setup-thumb{width:100%!important;height:auto!important;min-height:0!important;max-height:520px!important;aspect-ratio:auto!important;border:1px solid #201e1b!important;border-radius:3px!important;background:#10100f!important;overflow:hidden!important}
+#plan .planned-card-list .setup-thumb{box-sizing:border-box!important;margin-left:0!important;margin-right:0!important;width:100%!important;height:auto!important;min-height:0!important;max-height:520px!important;aspect-ratio:auto!important;border:1px solid #201e1b!important;border-radius:3px!important;background:#10100f!important;overflow:hidden!important}
 #plan .planned-card-list .setup-thumb img,#plan .planned-card-list .setup-thumb.cb-v21-portrait img,#plan .planned-card-list .setup-thumb.cb-v21-landscape img,#plan .planned-card-list .setup-thumb.cb-v21-square img{display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:520px!important;object-fit:contain!important;margin:0 auto!important}
 #plan .planned-card-list .setup-thumb.cb-v21-portrait,#plan .planned-card-list .setup-thumb.cb-v21-landscape,#plan .planned-card-list .setup-thumb.cb-v21-square{height:auto!important;min-height:0!important;max-height:520px!important;padding:0!important}
 #plan .planned-card-list .setup-summary{display:none!important}
@@ -574,10 +574,10 @@ body.cb-setup-detail #planned-items>details.cb-min-review>summary{min-height:64p
 #plan .planned-card-list .banko-monitor-condition{font-size:12px!important}
 #plan .planned-card-list .banko-monitor-count{font-size:13px!important}
 #plan .planned-card-list .banko-progress{margin:3px 0 0!important}
-#plan .planned-card-list .setup-link.banko-view,#plan .cb-a4-view-all{margin:14px 0 20px!important;box-sizing:border-box!important;min-height:37px!important}
+#plan .cb-a4-view-all{margin:14px 0 20px!important;box-sizing:border-box!important;min-height:37px!important}
 #plan .cb-v21-pin{position:absolute!important;top:8px!important;right:0!important;z-index:2!important;width:27px!important;height:27px!important;border-radius:6px!important;font-size:14px!important;background:#15130e!important;color:#d9b34c!important;border:1px solid #5b4a27!important}
 #plan .cb-v21-pin.is-pinned{background:#d9b34c!important;color:#18120b!important}
-#plan .cb-a4-view-all{display:block!important;width:100%!important;text-align:center!important;border:1px solid #49402e!important;border-radius:4px!important;padding:12px!important;margin:14px 0 20px!important;background:transparent!important;color:var(--gold)!important;font-size:10px!important;letter-spacing:.09em!important}
+#plan .cb-a4-view-all{display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:100%!important;min-height:37px!important;padding:9px 12px!important;margin:14px 0 20px!important;border:1px solid #66532d!important;border-radius:4px!important;background:transparent!important;color:#d9b34c!important;font-size:10px!important;font-weight:750!important;letter-spacing:.08em!important;line-height:1.3!important}
 #plan .cb-v21-process-group,#plan .cb-v21-additional-group{border:0!important;background:transparent!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important}
 #plan .cb-v21-process-group>.card,#plan .cb-v21-additional-group>.card{border:0!important;border-bottom:1px solid var(--a4-line)!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:0!important}
 #plan .cb-v21-process-group>.card+.card{border-top:0!important}
