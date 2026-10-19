@@ -434,7 +434,7 @@ body>.app,.app{width:100%;max-width:480px;min-width:0;overflow-x:clip}
 #plan .cb-v21-matched-entry .small{margin:5px 0}
 
 /* V2.1 compact AFTER · OVERALL RESULT only; no journal data/handlers changed */
-#plan .card:has(> .section-title:first-child):has(#result-upload){padding:14px 16px!important;display:flex;flex-direction:column;gap:7px}
+#plan .card:not(details):has(> .section-title:first-child):has(#result-upload){padding:14px 16px!important;display:flex;flex-direction:column;gap:7px}
 #plan .card:has(#result-upload)>.section-title{margin:0 0 4px!important}
 #plan .card label.shot[for="result-upload"]{height:42px!important;min-height:42px!important;padding:6px 10px!important;margin:0 0 3px!important;font-size:12px!important}
 #plan .card:has(#result-upload)>.label{margin:4px 0 0!important}
@@ -549,10 +549,7 @@ body.cb-setup-detail .cb-v21-additional-group,
 body.cb-setup-detail .app header{display:none!important}
 body.cb-setup-detail .app{padding-bottom:0!important}
 /* Normalize the inherited card's internal content offset, not just the label. */
-body.cb-setup-detail #planned-items>details.cb-min-result,
-#planned-items:has(#back-setup)>details.cb-min-result{margin-left:0!important;margin-right:0!important;padding-left:0!important;padding-right:0!important;transform:none!important}
-body.cb-setup-detail #planned-items>details.cb-min-result>summary,
-#planned-items:has(#back-setup)>details.cb-min-result>summary{margin:0!important;padding-left:0!important;padding-right:0!important;text-indent:0!important;transform:none!important;position:relative!important;left:0!important;box-sizing:border-box!important}
+
 body.cb-setup-detail #planned-items>details.cb-v21-entries-fold>summary,
 body.cb-setup-detail #planned-items>details.cb-min-result>summary,
 body.cb-setup-detail #planned-items>details.cb-min-management>summary,
