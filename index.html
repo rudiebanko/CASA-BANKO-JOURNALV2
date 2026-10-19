@@ -663,4 +663,52 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function init(){scan();var root=document.getElementById('planned-items');if(!root)return;new MutationObserver(scan).observe(root,{childList:true,subtree:true});}
 })();
 </script>
+
+<style id="cb-global-navigation">
+/* Keep the existing bottom navigation available above feature screens. */
+.bottom{z-index:11020!important}
+.v2-extra-overlay,.v2-missed-overlay,.v2-it-overlay{padding-bottom:calc(110px + env(safe-area-inset-bottom))!important}
+#cb-feature-balance{position:fixed;z-index:11010;top:calc(8px + env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));pointer-events:none}
+#cb-feature-balance[hidden]{display:none!important}
+#cb-feature-balance .header-pnl{box-shadow:0 2px 12px #000b}
+body:has(#settings.screen.active) header .header-pnl{display:none!important}
+</style>
+<div id="cb-feature-balance" hidden aria-label="Live TradeLocker balance"></div>
+<script>
+/* Shared navigation and live-balance presentation across feature overlays.
+   Reads the existing header balance; never recalculates or changes broker data. */
+(function(){
+const overlays=['v2-extra-overlay','v2-missed-overlay','v2-intrade-overlay'];
+const balance=document.getElementById('cb-feature-balance');
+const source=document.getElementById('header-pnl');
+const nav=document.querySelector('.bottom');
+if(!balance||!source||!nav)return;
+const copy=source.cloneNode(true);
+copy.removeAttribute('id');
+copy.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+balance.appendChild(copy);
+function overlayOpen(el){return !!el&&(el.classList.contains('show')||(!el.hidden&&getComputedStyle(el).display!=='none'))}
+function sync(){
+ const active=overlays.some(id=>overlayOpen(document.getElementById(id)));
+ const settings=document.getElementById('settings')?.classList.contains('active');
+ balance.hidden=!active||settings;
+ if(!balance.hidden){
+   copy.className=source.className;
+   copy.innerHTML=source.innerHTML.replace(/\\s+id="[^"]*"/g,'');
+ }
+}
+new MutationObserver(sync).observe(source,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
+overlays.forEach(id=>{const el=document.getElementById(id);if(el)new MutationObserver(sync).observe(el,{attributes:true,attributeFilter:['class','hidden','aria-hidden']})});
+document.querySelectorAll('.bottom .tab').forEach(button=>button.addEventListener('click',()=>{
+ overlays.forEach(id=>{
+   const el=document.getElementById(id);
+   if(!overlayOpen(el))return;
+   const close=el.querySelector('[data-v2-extra-close],[data-missed-close],[data-it-close]');
+   if(close)close.click();
+ });
+ sync();
+}));
+sync();
+})();
+</script>
 </body></html>
