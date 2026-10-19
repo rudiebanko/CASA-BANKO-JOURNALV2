@@ -594,14 +594,13 @@ body>.app,.app{width:100%;max-width:480px;min-width:0;overflow-x:clip}
 
 /* Detail view is distraction-free by default. Hide UI, never disconnect its data services. */
 body.cb-setup-detail .app>header,
-body.cb-setup-detail .app>.bottom,
 body.cb-setup-detail #plan>#v2-urge-launch,
 body.cb-setup-detail #plan>.cb-v21-process-group,
 body.cb-setup-detail #plan>.cb-v21-additional-group,
 body.cb-setup-detail #plan>.v2-extra-links,
 body.cb-setup-detail #plan>#plan-checklist-fold,
 body.cb-setup-detail #plan>#plan-save-fold{display:none!important}
-body.cb-setup-detail #plan{padding-bottom:24px!important}
+body.cb-setup-detail #plan{padding-bottom:calc(80px + env(safe-area-inset-bottom))!important}
 body.cb-setup-detail #planned-items{padding-bottom:12px}
 body.cb-setup-detail #planned-items>.cb-v21-detail-controls{display:flex;justify-content:flex-start!important}
 body.cb-setup-detail #planned-items>.cb-v21-detail-controls #back-setup{flex:0 0 auto!important;text-align:left!important}
@@ -635,11 +634,10 @@ body:has(#planned-items #back-setup) #plan>#plan-save-fold{display:none!importan
 body:has(#planned-items #back-setup) #plan{padding-bottom:24px!important}
 
 /* Saved setup uses an isolated view: no persistent app navigation or empty process groups. */
-body.cb-setup-detail .bottom,body.cb-setup-detail .app .bottom,
 body.cb-setup-detail .cb-v21-process-group,
 body.cb-setup-detail .cb-v21-additional-group,
 body.cb-setup-detail .app header{display:none!important}
-body.cb-setup-detail .app{padding-bottom:0!important}
+body.cb-setup-detail .app{padding-bottom:calc(70px + env(safe-area-inset-bottom))!important}
 /* Normalize the inherited card's internal content offset, not just the label. */
 
 body.cb-setup-detail #planned-items>details.cb-v21-entries-fold>summary,
