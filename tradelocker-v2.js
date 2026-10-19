@@ -14,7 +14,7 @@ const tradingDayStart=(now=new Date())=>{
  const utc=Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day),14,0,0);
  const noon=new Date(utc+12*3600000);
  const localHour=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',hour:'2-digit',hourCycle:'h23'}).format(noon));
- const offset=(12-localHour+24)%24;
+ const offset=14-localHour;
  let cutoff=utc+offset*3600000;
  if(now.getTime()<cutoff)cutoff-=24*3600000;
  return cutoff;
@@ -122,6 +122,7 @@ async function start(){
 function refreshWhenVisible(){if(!document.hidden&&account&&!refreshing)refresh()}
 setInterval(refreshWhenVisible,30*1000);
 window.addEventListener('focus',refreshWhenVisible);
+window.addEventListener('casa-banko:trades-updated',e=>{if(String(e.detail?.accountId)===String(account?.id))refreshWhenVisible()});
 document.addEventListener('visibilitychange',refreshWhenVisible);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
