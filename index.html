@@ -87,6 +87,9 @@ button{cursor:pointer}
 #timeline-editor .journal-upload{display:flex;align-items:center;justify-content:center;min-height:49px;border:1px solid #51432f;border-radius:6px;background:#151411;color:#bdb6aa;font-size:11px;cursor:pointer;margin-bottom:14px}
 #timeline-editor .journal-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:14px;align-items:stretch}
 #timeline-editor .journal-field{min-width:0;width:100%;max-width:100%;position:relative}
+#timeline-editor .journal-field-grid{position:relative;z-index:2}
+#timeline-editor .journal-field:has(.journal-choice[open]){z-index:3}
+#timeline-editor .journal-choice-options{pointer-events:auto;touch-action:pan-y}
 #timeline-editor .journal-field .label,#timeline-editor .journal-observations-label{display:block;font-size:10px;letter-spacing:.5px;color:#9e988d;margin:0 0 7px;font-weight:600}
 #timeline-editor .journal-choice-wrap{position:relative;display:block;width:100%;height:48px;min-width:0;max-width:100%}
 #timeline-editor .journal-choice-wrap select.field{position:absolute!important;left:0!important;top:0!important;width:1px!important;height:1px!important;min-height:0!important;opacity:0!important;pointer-events:none!important}
