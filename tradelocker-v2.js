@@ -9,32 +9,23 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=(n,cur='USD')=>Number.isFinite(Number(n))?new Intl.NumberFormat('en-US',{style:'currency',currency:cur}).format(Number(n)):'—';
 function broadcast(detail){window.dispatchEvent(new CustomEvent('casa-banko:broker-state',{detail}))}
 function status(s){el('v2-status').textContent=s;}
-const tradingDayStart=(now=new Date())=>{
- const parts=Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(now).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
- const utc=Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day),14,0,0);
- const noon=new Date(utc+12*3600000);
- const localHour=Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',hour:'2-digit',hourCycle:'h23'}).format(noon));
- const offset=14-localHour;
- let cutoff=utc+offset*3600000;
- if(now.getTime()<cutoff)cutoff-=24*3600000;
- return cutoff;
+// TradeLocker live balance remains authoritative. Baseline is per account and Pacific trading day.
+const pacificParts=d=>Object.fromEntries(new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(d).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+const tradingDayKey=(now=new Date())=>{
+ const p=pacificParts(now);
+ const day=new Date(Date.UTC(+p.year,+p.month-1,+p.day-(+p.hour<14?1:0)));
+ return day.toISOString().slice(0,10);
 };
-const dateMs=v=>{if(v==null||v==='')return null;const n=Number(v);const ms=Number.isFinite(n)&&n>0?(n<1e12?n*1000:n):Date.parse(v);return Number.isFinite(ms)?ms:null};
-function currentDayPnl(accountId){
- let saved;try{saved=JSON.parse(localStorage.getItem('cb-v2-linked-broker-trades::'+accountId)||'{}')}catch{return null}
- if(!Array.isArray(saved?.rows))return null;
- const start=tradingDayStart(),end=Date.now();let sum=0;
- for(const t of saved.rows){
-  if(t.tradeStatus==='OPEN'||t.isOpen===true)continue;
-  const closed=dateMs(t.genesisCloseMs??t.genesisCloseTime??t.closeTime??t.closeDate??t.closedAt);
-  if(closed==null||closed<start||closed>end)continue;
-  const n=t.pnl==null?NaN:Number(t.pnl);
-  if(!Number.isFinite(n))return null;
-  sum+=n;
+function balanceDayPnl(accountId,balance){
+ if(!Number.isFinite(balance))return {available:false,pnl:null};
+ const key='cb-v2-balance-day-v1::'+accountId,day=tradingDayKey();
+ let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null')}catch{}
+ if(!saved||saved.day!==day||!Number.isFinite(Number(saved.startBalance))){
+  saved={day,startBalance:balance,recordedAt:new Date().toISOString()};
+  try{localStorage.setItem(key,JSON.stringify(saved))}catch{return {available:false,pnl:null}}
  }
- return Number(sum.toFixed(2));
+ return {available:true,pnl:Number((balance-Number(saved.startBalance)).toFixed(2)),startBalance:Number(saved.startBalance),day};
 }
-
 function mount(){
  const root=document.createElement('section');root.id='v2-broker';
  root.innerHTML=`<style>
@@ -87,8 +78,8 @@ async function refresh(){
   const state=await invoke('tradelocker-account-state');
   if(String(state.accountId)!==String(account.id))throw Error('Broker account ID mismatch');
   const cur=state.currency||'USD';el('v2-balance').textContent='Balance: '+money(state.balance,cur);account.balance=Number(state.balance);account.currency=cur;renderAccounts();
-  const daily=currentDayPnl(String(account.id));
-  el('v2-pnl').textContent='Today’s broker P&L (2 PM Pacific day): '+(daily!==null?money(daily,cur):'Sync trades to calculate');broadcast({status:'connected',available:daily!==null,todayPnl:daily,balance:state.balance,currency:cur});
+  const daily=balanceDayPnl(String(account.id),Number(state.balance));
+  el('v2-pnl').textContent='Today’s broker P&L (2 PM Pacific day): '+(daily.available?money(daily.pnl,cur):'Unavailable');broadcast({status:'connected',available:daily.available,todayPnl:daily.pnl,balance:state.balance,currency:cur});
   el('v2-updated').textContent='Last refreshed: '+new Date().toLocaleString();
   status('Connected · broker values');
  }catch(err){broadcast({status:'offline'});status('Broker refresh failed: '+err.message);el('v2-updated').textContent='Values may be stale. No local journal data was changed.'}
