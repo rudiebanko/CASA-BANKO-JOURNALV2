@@ -16,15 +16,26 @@ const tradingDayKey=(now=new Date())=>{
  const day=new Date(Date.UTC(+p.year,+p.month-1,+p.day-(+p.hour<14?1:0)));
  return day.toISOString().slice(0,10);
 };
-function balanceDayPnl(accountId,balance){
+async function balanceDayPnl(accountId,balance){
  if(!Number.isFinite(balance))return {available:false,pnl:null};
- const key='cb-v2-balance-day-v1::'+accountId,day=tradingDayKey();
- let saved=null;try{saved=JSON.parse(localStorage.getItem(key)||'null')}catch{}
- if(!saved||saved.day!==day||!Number.isFinite(Number(saved.startBalance))){
-  saved={day,startBalance:balance,recordedAt:new Date().toISOString()};
-  try{localStorage.setItem(key,JSON.stringify(saved))}catch{return {available:false,pnl:null}}
+ const {data:{session},error:sessionError}=await client.auth.getSession();
+ if(sessionError||!session?.user?.id)throw Error('Sign in to sync the daily starting balance');
+ const day=tradingDayKey(),filter={user_id:session.user.id,account_id:accountId,trading_day:day};
+ const table=client.from('tradelocker_daily_balance_baselines');
+ let {data,error}=await table.select('starting_balance').match(filter).maybeSingle();
+ if(error)throw Error('Could not load cloud daily baseline: '+error.message);
+ if(!data){
+  const created=await table.insert({...filter,starting_balance:balance}).select('starting_balance').maybeSingle();
+  if(created.error){
+   // Another device may have established the baseline at the same time.
+   const retry=await table.select('starting_balance').match(filter).maybeSingle();
+   if(retry.error||!retry.data)throw Error('Could not establish cloud daily baseline: '+created.error.message);
+   data=retry.data;
+  }else data=created.data;
  }
- return {available:true,pnl:Number((balance-Number(saved.startBalance)).toFixed(2)),startBalance:Number(saved.startBalance),day};
+ const start=Number(data?.starting_balance);
+ if(!Number.isFinite(start))throw Error('Cloud daily starting balance is invalid');
+ return {available:true,pnl:Number((balance-start).toFixed(2)),startBalance:start,day};
 }
 function mount(){
  const root=document.createElement('section');root.id='v2-broker';
@@ -78,7 +89,7 @@ async function refresh(){
   const state=await invoke('tradelocker-account-state');
   if(String(state.accountId)!==String(account.id))throw Error('Broker account ID mismatch');
   const cur=state.currency||'USD';el('v2-balance').textContent='Balance: '+money(state.balance,cur);account.balance=Number(state.balance);account.currency=cur;renderAccounts();
-  const daily=balanceDayPnl(String(account.id),Number(state.balance));
+  const daily=await balanceDayPnl(String(account.id),Number(state.balance));
   el('v2-pnl').textContent='Today’s broker P&L (2 PM Pacific day): '+(daily.available?money(daily.pnl,cur):'Unavailable');broadcast({status:'connected',available:daily.available,todayPnl:daily.pnl,balance:state.balance,currency:cur});
   el('v2-updated').textContent='Last refreshed: '+new Date().toLocaleString();
   status('Connected · broker values');
